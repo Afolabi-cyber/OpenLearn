@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <h1 style="color: black;">Welcome to OpenLearn</h1>
+        <p style="color: black;">Upload your assignments or ask questions about any topic.</p>
+    </div>
+
+    <!-- Upload Section -->
+    <div id="upload-section" class="mt-4">
+        <form id="upload-form" enctype="multipart/form-data" method="POST">
+            <input type="file" id="upload-file" name="assignment" class="form-control mx-auto" required>
+            <button type="submit" id="upload-button" class="btn btn-primary mt-3">Upload</button>
+        </form>
+        <div id="upload-notification" class="mt-3 text-success" style="display: none;">
+            File uploaded successfully!
+        </div>
+    </div>
+
+    <!-- Uploaded Image Section (Hidden by Default) -->
+    <div id="uploaded-image-container" class="mt-4" style="display: none;">
+        <p>Image uploaded successfully! You can now ask questions about it.</p>
+    </div>
+
+    <!-- Question Section (Hidden by Default) -->
+    <div id="question-section" class="mt-4" style="display: none;">
+        <form id="question-form" method="POST">
+            <textarea id="question" name="question" class="form-control mx-auto" placeholder="Ask a question..." rows="3" required></textarea>
+            <button type="submit" id="send-button" class="btn btn-primary mt-3">Send</button>
+        </form>
+        <div id="response-container" class="mt-3"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle form submission for uploading assignments
+        const uploadForm = document.getElementById("upload-form");
+        const uploadNotification = document.getElementById("upload-notification");
+        const uploadedImageContainer = document.getElementById("uploaded-image-container");
+        const questionSection = document.getElementById("question-section");
+        const responseContainer = document.getElementById("response-container");
+        let filePath = ""; // Path of the uploaded file
+
+        uploadForm.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const formData = new FormData(uploadForm);
+            fetch("/", {
+                method: "POST",
+                body: formData,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        filePath = data.file_path; // Store the uploaded file path
+                        uploadNotification.style.display = "block";
+                        uploadedImageContainer.style.display = "block";
+                        questionSection.style.display = "block"; // Show question form after upload
+                    } else {
+                        alert("Error uploading file: " + data.error);
+                    }
+                })
+                .catch((error) => {
+                    alert("Error: " + error);
+                });
+        });
+
+        // Handle form submission for asking questions
+        const questionForm = document.getElementById("question-form");
+
+        questionForm.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent form submission
+
+            const question = document.getElementById("question").value.trim();
+            if (!question) {
+                alert("Please enter a question.");
+                return;
+            }
+
+            fetch("/ask_image_question", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ question: question, file_path: filePath }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.response) {
+                        responseContainer.innerHTML = "<strong>Answer:</strong> " + data.response;
+                    } else {
+                        responseContainer.innerHTML = "<strong>Error:</strong> " + data.error;
+                    }
+                })
+                .catch((error) => {
+                    responseContainer.innerHTML = "<strong>Error:</strong> " + error;
+                });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Welcome to Your Dashboard</h1>
+    <p>Here you can see your uploaded assignments, progress, or other information.</p>
+
+    <!-- Example: Display uploaded assignments (you can adapt this) -->
+    <div>
+        <h3>Your Uploads</h3>
+        <!-- You could dynamically populate this list based on uploaded files -->
+        <ul>
+            <li>Assignment 1: <a href="/uploads/assignment1.pdf">Download</a></li>
+            <li>Assignment 2: <a href="/uploads/assignment2.pdf">Download</a></li>
+        </ul>
+    </div>
+
+    <!-- You can also add a summary of the user's activity here -->
+    <div>
+        <h3>Your Activity</h3>
+        <p>Upcoming quiz: Physics Basics</p>
+        <p>Recent chat with AI: How to solve integrals?</p>
+    </div>
+{% endblock %}

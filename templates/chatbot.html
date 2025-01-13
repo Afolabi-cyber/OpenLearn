@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center">
+    <h1>Ask the AI Tutor</h1>
+    <form id="chat-form">
+        <textarea id="user-message" class="form-control mb-3" placeholder="Ask your question here..." required></textarea>
+        <button type="submit" class="btn btn-primary">Ask</button>
+    </form>
+    <div id="chatbox" class="mt-4" style="text-align: left; max-width: 600px; margin: 0 auto;">
+        <!-- Chat messages will appear here -->
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatForm = document.getElementById("chat-form");
+        const userMessage = document.getElementById("user-message");
+        const chatbox = document.getElementById("chatbox");
+
+        // Handle form submission
+        chatForm.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const message = userMessage.value.trim();
+            if (!message) {
+                alert("Please enter a question.");
+                return;
+            }
+
+            // Display the user's message in the chatbox
+            const userHtml = `<div class="alert alert-primary"><strong>You:</strong> ${message}</div>`;
+            chatbox.innerHTML += userHtml;
+
+            // Send the message to the backend
+            fetch("/chatbot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message: message }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.response) {
+                        // Display AI's response in the chatbox
+                        const aiHtml = `<div class="alert alert-secondary"><strong>AI:</strong> ${data.response}</div>`;
+                        chatbox.innerHTML += aiHtml;
+                    } else {
+                        const errorHtml = `<div class="alert alert-danger"><strong>Error:</strong> ${data.error}</div>`;
+                        chatbox.innerHTML += errorHtml;
+                    }
+                })
+                .catch((error) => {
+                    const errorHtml = `<div class="alert alert-danger"><strong>Error:</strong> ${error}</div>`;
+                    chatbox.innerHTML += errorHtml;
+                });
+
+            // Clear the input field
+            userMessage.value = "";
+        });
+    });
+</script>
+{% endblock %}
